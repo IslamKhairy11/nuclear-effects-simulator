@@ -1,4 +1,4 @@
-# app.py (Final Version with Theme-Aware Styling)
+# app.py (Final Version with KeyError Fix)
 
 import streamlit as st
 import pandas as pd
@@ -26,7 +26,7 @@ if 'GEOAPIFY_API_KEY' not in st.secrets:
     st.stop()
 API_KEY = st.secrets["GEOAPIFY_API_KEY"]
 
-geolocator = Nominatim(user_agent="nuclear_bomb_visualizer_app_v8")
+geolocator = Nominatim(user_agent="nuclear_bomb_visualizer_app_v9")
 
 # Initialize session state
 if 'target_lat' not in st.session_state:
@@ -98,7 +98,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-
 # --- 3. DATA PROCESSING & ANALYSIS ---
 bomb_info = BOMB_DATA[selected_bomb]
 effects = bomb_info['effects']
@@ -131,9 +130,15 @@ folium.Marker(location=user_point, popup="Your Location", tooltip="Your Location
 map_key = f"{selected_bomb}-{st.session_state.target_lat}-{st.session_state.target_lon}"
 map_data = st_folium(m, key=map_key, width='100%', height=600, returned_objects=["all_drawings", "center", "zoom"])
 
+# --- THE FIX IS HERE ---
 if map_data:
-    st.session_state.map_center = [map_data["center"]["lat"], map_data["center"]["lng"]]
-    st.session_state.map_zoom = map_data["zoom"]
+    # Safely update map view state (pan/zoom) if returned
+    if map_data.get("center"):
+        st.session_state.map_center = [map_data["center"]["lat"], map_data["center"]["lng"]]
+    if map_data.get("zoom"):
+        st.session_state.map_zoom = map_data["zoom"]
+
+    # Safely process dragged markers if returned
     if map_data.get("all_drawings"):
         needs_rerun = False
         for feature in map_data["all_drawings"]:
@@ -158,7 +163,6 @@ for i, (name, details) in enumerate(sorted_effects):
         color_hex = f"#{details['color'][0]:02x}{details['color'][1]:02x}{details['color'][2]:02x}"
         radius_km = details['radius_m'] / 1000
         description = BOMB_DATA[selected_bomb]['effects'][name]['description']
-        # --- THEME-AWARE FIX IS HERE ---
         st.markdown(f"""
         <div style="color: var(--text-color); border-left: 10px solid {color_hex}; padding-left: 10px; height: 100%;">
             <strong style="font-size: 1.1em;">{name}</strong><br>
@@ -174,14 +178,12 @@ with info_col1:
     st.header("📍 Selected Locations")
     try:
         det_loc_name = geolocator.reverse(detonation_point, exactly_one=True, timeout=10)
-        # --- THEME-AWARE FIX IS HERE ---
         st.markdown(f"<div style='color: var(--text-color);'><strong>Detonation Point:</strong><br>{det_loc_name.address}</div>", unsafe_allow_html=True)
     except Exception:
         st.markdown(f"<div style='color: var(--text-color);'><strong>Detonation Point:</strong><br>{st.session_state.target_lat:.4f}, {st.session_state.target_lon:.4f}</div>", unsafe_allow_html=True)
     st.markdown("") # Vertical space
     try:
         user_loc_name = geolocator.reverse(user_point, exactly_one=True, timeout=10)
-        # --- THEME-AWARE FIX IS HERE ---
         st.markdown(f"<div style='color: var(--text-color);'><strong>Your Location:</strong><br>{user_loc_name.address}</div>", unsafe_allow_html=True)
     except Exception:
         st.markdown(f"<div style='color: var(--text-color);'><strong>Your Location:</strong><br>{st.session_state.user_lat:.4f}, {st.session_state.user_lon:.4f}</div>", unsafe_allow_html=True)
@@ -195,7 +197,6 @@ with info_col2:
 # --- FOOTER ---
 st.divider()
 linkedin_url = "https://www.linkedin.com/in/ikhairy11/"
-# --- THEME-AWARE FIX IS HERE ---
 footer_html = f"""
 <div style="text-align: center; padding: 1rem 0;">
     <p>Built by Islam Khairy | <a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: var(--primary);"> View my LinkedIn Profile</a></p>
