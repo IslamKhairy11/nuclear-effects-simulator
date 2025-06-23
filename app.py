@@ -198,7 +198,7 @@ linkedin_url = "https://www.linkedin.com/in/ikhairy11/"
 # --- THEME-AWARE FIX IS HERE ---
 footer_html = f"""
 <div style="text-align: center; padding: 1rem 0;">
-    <p>Built by Islam Khairy | <a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: var(--primary);">:linkedin: View my LinkedIn Profile</a></p>
+    <p>Built by Islam Khairy | <a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: var(--primary);"> View my LinkedIn Profile</a></p>
 </div>
 """
 st.markdown(footer_html, unsafe_allow_html=True)
