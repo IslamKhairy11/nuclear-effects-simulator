@@ -1,4 +1,4 @@
-# app.py (Final Version with Horizontal Legend and Full-Width Map)
+# app.py (Final Version with Theme-Aware Styling)
 
 import streamlit as st
 import pandas as pd
@@ -26,7 +26,7 @@ if 'GEOAPIFY_API_KEY' not in st.secrets:
     st.stop()
 API_KEY = st.secrets["GEOAPIFY_API_KEY"]
 
-geolocator = Nominatim(user_agent="nuclear_bomb_visualizer_app_v6")
+geolocator = Nominatim(user_agent="nuclear_bomb_visualizer_app_v8")
 
 # Initialize session state
 if 'target_lat' not in st.session_state:
@@ -92,11 +92,9 @@ for suggestion in st.session_state.user_suggestions:
     )
 
 st.sidebar.info("💡 **Pro Tip:** You can also click and drag markers on the map.")
-
-#--- Link to Information Page ---
 st.sidebar.divider()
 st.sidebar.markdown(
-    "<a href='/Information' target='_blank' style='text-decoration: none; color: #1E90FF;'>ℹ️ Learn about Terminology & Bombs</a>",
+    "<a href='/Information' target='_blank' style='text-decoration: none; color: var(--primary);'>ℹ️ Learn about Terminology & Bombs</a>",
     unsafe_allow_html=True
 )
 
@@ -160,8 +158,9 @@ for i, (name, details) in enumerate(sorted_effects):
         color_hex = f"#{details['color'][0]:02x}{details['color'][1]:02x}{details['color'][2]:02x}"
         radius_km = details['radius_m'] / 1000
         description = BOMB_DATA[selected_bomb]['effects'][name]['description']
+        # --- THEME-AWARE FIX IS HERE ---
         st.markdown(f"""
-        <div style="color: #333; border-left: 10px solid {color_hex}; padding-left: 10px; height: 100%;">
+        <div style="color: var(--text-color); border-left: 10px solid {color_hex}; padding-left: 10px; height: 100%;">
             <strong style="font-size: 1.1em;">{name}</strong><br>
             <span style="font-size: 0.9em;">Radius: <strong>{radius_km:.2f} km</strong></span><br>
             <small>{description}</small>
@@ -175,15 +174,17 @@ with info_col1:
     st.header("📍 Selected Locations")
     try:
         det_loc_name = geolocator.reverse(detonation_point, exactly_one=True, timeout=10)
-        st.markdown(f"**Detonation Point:**<br>{det_loc_name.address}", unsafe_allow_html=True)
+        # --- THEME-AWARE FIX IS HERE ---
+        st.markdown(f"<div style='color: var(--text-color);'><strong>Detonation Point:</strong><br>{det_loc_name.address}</div>", unsafe_allow_html=True)
     except Exception:
-        st.markdown(f"**Detonation Point:**<br>{st.session_state.target_lat:.4f}, {st.session_state.target_lon:.4f}", unsafe_allow_html=True)
+        st.markdown(f"<div style='color: var(--text-color);'><strong>Detonation Point:</strong><br>{st.session_state.target_lat:.4f}, {st.session_state.target_lon:.4f}</div>", unsafe_allow_html=True)
     st.markdown("") # Vertical space
     try:
         user_loc_name = geolocator.reverse(user_point, exactly_one=True, timeout=10)
-        st.markdown(f"**Your Location:**<br>{user_loc_name.address}", unsafe_allow_html=True)
+        # --- THEME-AWARE FIX IS HERE ---
+        st.markdown(f"<div style='color: var(--text-color);'><strong>Your Location:</strong><br>{user_loc_name.address}</div>", unsafe_allow_html=True)
     except Exception:
-        st.markdown(f"**Your Location:**<br>{st.session_state.user_lat:.4f}, {st.session_state.user_lon:.4f}", unsafe_allow_html=True)
+        st.markdown(f"<div style='color: var(--text-color);'><strong>Your Location:</strong><br>{st.session_state.user_lat:.4f}, {st.session_state.user_lon:.4f}</div>", unsafe_allow_html=True)
 with info_col2:
     st.header("👤 Your Situation")
     st.metric("Distance from Ground Zero", f"{user_distance_m / 1000:.2f} km")
@@ -194,9 +195,10 @@ with info_col2:
 # --- FOOTER ---
 st.divider()
 linkedin_url = "https://www.linkedin.com/in/ikhairy11/"
+# --- THEME-AWARE FIX IS HERE ---
 footer_html = f"""
 <div style="text-align: center; padding: 1rem 0;">
-    <p>Built by Islam Khairy El Zaghal | <a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: #1E90FF;">View my LinkedIn Profile</a></p>
+    <p>Built by Islam Khairy | <a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: var(--primary);">:linkedin: View my LinkedIn Profile</a></p>
 </div>
 """
 st.markdown(footer_html, unsafe_allow_html=True)
